@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard | LifeHealth Supply</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('picture3.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        header {
+            text-align: center;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+
+        .para {
+            color: #2d6a4f;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .navbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 800px;
+        }
+
+        .navbar button {
+            padding: 14px 20px;
+            background-color: #003366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 180px;
+        }
+
+        .navbar button:hover {
+            background-color: #005599;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Welcome to LifeHealth Supply</h1>
+    </header>
+
+    <div class="para">
+        <p>From Invoice to Insight — All in One Place.</p>
+    </div>
+
+    <div class="navbar">
+        <button onclick="location.href='userProfile.html'" title="View and edit your profile"> My Profile</button>
+        <button onclick="location.href='shop.html'" title="Start shopping for products" >Browse & Shop</button>
+        <button title="Check your order history" onclick="location.href='viewOrders.html'">View Orders</button>
+        <button title="Logout from your account" onclick="logoutUser()">Logout</button>
+    </div>
+
+    <script>
+        function logoutUser() {
+            alert('You have been logged out!');
+            window.location.href = 'home.html';
+        }
+    </script>
+
+</body>
+
+</html>

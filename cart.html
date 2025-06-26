@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart | LifeHealth Supply</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url('picture3.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    header {
+        background-color: whitesmoke;
+        color: #003366;
+        top: 0;
+        left: 0;
+        position: fixed;
+        padding: 12px 5%;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar h3 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.4rem;
+    }
+
+    .mycart {
+        color: #003366;
+        margin-top: 100px;
+        text-align: center;
+    }
+
+    .mycart h1 {
+        font-size: 2.5rem;
+        color: #003366;
+    }
+
+    .cartItems {
+        margin-left: 120px;
+        padding: 40px 7%;
+        background-color: rgba(255, 255, 255, 0.8);
+        margin-top: 30px auto;
+        border-radius: 12px;
+        max-width: 800px;
+    }
+
+    .itemsGrid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .product-card {
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-card h3 {
+        margin: 0 0 10px 0;
+    }
+
+    .product-card p {
+        margin: 4px 0;
+    }
+
+    .controls {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn {
+
+        background-color: #003366;
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .delete-btn {
+        width: 60px;
+        height: 30px;
+        margin-left: auto;
+        padding: 5px 10px;
+        background-color: #2d6a4f;
+    }
+
+    .plus,
+    .minus {
+        width: 30px;
+        height: 30px;
+    }
+
+    .navbar {
+        display: flex;
+        direction: row;
+    }
+
+    .navbar a {
+        text-decoration: none;
+        color: #003366;
+        margin-left: 500px;
+        margin-top: 3px;
+    }
+</style>
+
+<body>
+    <header>
+        <div class="navbar">
+            <h3> <i class="fa-solid fa-cart-shopping"></i> LifeHealth Supply</h3>
+            <a href="invoice.html"><i class="fa-solid fa-receipt"></i><b> Generate Invoice</b></a>
+        </div>
+
+    </header>
+    <div class="mycart">
+        <h1> My cart </h1>
+    </div>
+    <section class="cartItems">
+        <div id="itemsGrid" class="itemsGrid"></div>
+    </section>
+
+
+    <script>
+    const itemsGrid = document.getElementById("itemsGrid");
+    const userId = 1; // Replace with actual user ID
+    localStorage.setItem("userId", userId); // ✅ Save it for invoice page
+
+    let items = [];
+
+    async function fetchCartItems() {
+        try {
+            const response = await fetch(`http://localhost:3000/cart/${userId}`);
+            if (!response.ok) throw new Error("Failed to load cart");
+
+            items = await response.json();
+            renderCartItems(); // ✅ now it works
+        } catch (err) {
+            itemsGrid.innerHTML = "<p>Error loading cart</p>";
+            console.error(err);
+        }
+    }
+
+    function renderCartItems() {
+        itemsGrid.innerHTML = "";
+
+        if (items.length === 0) {
+            itemsGrid.innerHTML = "<p>Your cart is empty</p>";
+            return;
+        }
+
+        items.forEach((product, index) => {
+            product.quantity = product.quantity || 1;
+
+            const card = document.createElement("div");
+            card.className = "product-card";
+
+            card.innerHTML = `
+                <h3>${product.name}</h3>
+                <p>Price: ${product.price}</p>
+                <p>Quantity: <span id="quantity-${index}">${product.quantity}</span></p>
+                <div class="controls">
+                    <button class="btn minus">-</button>
+                    <button class="btn plus">+</button>
+                    <button class="btn delete-btn">Delete</button>
+                </div>
+            `;
+
+            const minusBtn = card.querySelector(".minus");
+            const plusBtn = card.querySelector(".plus");
+            const deleteBtn = card.querySelector(".delete-btn");
+
+            minusBtn.addEventListener("click", () => {
+                if (product.quantity > 1) {
+                    updateQuantity(product.productId, product.quantity - 1);
+                }
+            });
+
+            plusBtn.addEventListener("click", () => {
+                updateQuantity(product.productId, product.quantity + 1);
+            });
+
+            deleteBtn.addEventListener("click", () => {
+                deleteItem(product.productId);
+            });
+
+            itemsGrid.appendChild(card);
+        });
+    }
+
+    async function updateQuantity(productId, quantity) {
+        await fetch("http://localhost:3000/cart/update", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, productId, quantity })
+        });
+        fetchCartItems();
+    }
+
+    async function deleteItem(productId) {
+        await fetch("http://localhost:3000/cart", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, productId })
+        });
+        fetchCartItems();
+    }
+
+    // ✅ Load items when the page loads
+    fetchCartItems();
+</script>
+
+</body>
+
+</html>

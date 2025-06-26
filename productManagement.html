@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Management | LifeHealth Supply</title>
+  <link rel="stylesheet" href="productstyle.css">
+</head>
+<style>
+  * {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    text-transform: capitalize;
+  }
+
+  body {
+    background-image: url('picture3.jpg');
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    padding-top: 80px;
+  }
+
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px 7%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-weight: bold;
+    font-size: 20px;
+    color: #003366;
+    text-decoration: none;
+  }
+
+  .navbar ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+  }
+
+  .navbar li {
+    position: relative;
+  }
+
+  .navbar a {
+    font-size: 18px;
+    color: white;
+    background-color: #003366;
+    text-decoration: none;
+    padding: 10px 15px;
+    display: block;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+  }
+
+  .navbar a:hover {
+    background-color: #d6eaff;
+    color: #333;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  .navbar li ul {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 220px;
+    flex-direction: column;
+    z-index: 999;
+    overflow: hidden;
+  }
+
+  .navbar li:hover ul {
+    display: flex;
+  }
+
+  .navbar li ul li {
+    width: 100%;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .navbar li ul li:first-child {
+    border-top: none;
+  }
+
+  .navbar li ul li a {
+    padding: 12px 18px;
+    color: #003366;
+    background-color: #f9fcff;
+  }
+
+
+
+  main.main-content {
+    padding: 40px 7%;
+  }
+
+  .navbar li ul li a:hover {
+    background-color: #006699;
+    color: #fff;
+  }
+
+  .content-box {
+    background: #ffffffcc;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    color: #003366;
+    backdrop-filter: blur(5px);
+  }
+
+  .content-box h2 {
+    margin-bottom: 20px;
+  }
+
+  .content-box p {
+    color: #2d6a4f;
+
+  }
+
+  .content-box input,
+  .content-box textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #f9fcff;
+    color: #003366;
+    transition: border-color 0.3s ease;
+  }
+
+  .content-box input:focus,
+  .content-box textarea:focus {
+    outline: none;
+    border-color: #007acc;
+  }
+
+  .content-box button {
+    width: 100%;
+    padding: 14px;
+    background-color: #007acc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 100;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .content-box button:hover {
+    background-color: #005fa3;
+  }
+</style>
+
+<body>
+  <header>
+    <a href="admin.html" class="logo">Back To Admin Panel</a>
+    <nav class="navbar">
+      <ul>
+        <li>
+          <a>Manage Products</a>
+          <ul>
+            <li><a onclick="loadContent('add')">Add Products</a></li>
+            <li><a onclick="loadContent('delete')">Delete Products</a></li>
+            <li><a onclick="loadContent('update')">Update Products</a></li>
+          </ul>
+        </li>
+
+        <li>
+          <a>Stock Management</a>
+          <ul>
+            <li><a onclick="loadContent('outOfStock')">Out of Stock Items</a></li>
+            <li><a onclick="loadContent('totalProducts')">Total Products</a></li>
+          </ul>
+        </li>
+        <li><a onclick="loadContent('viewAll')">View All Products</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="main-content" id="main-content">
+    <div class="content-box">
+      <h2>Manage Products!</h2>
+      <p>Take control of your content — start by choosing an option from the menu.</p>
+    </div>
+  </main>
+
+  <script>
+    function loadContent(section) {
+      const main = document.getElementById("main-content");
+      let content = '';
+
+      switch (section) {
+        case 'add':
+          content = `
+      <div class="content-box">
+        <h2>Add Product</h2>
+        <input id="productName" placeholder="Product Name">
+        <input id="productPrice" placeholder="Price">
+        <input id="productStock" placeholder="Stock Quantity">
+        <button onclick="addProduct()">Add Product</button>
+      </div>`;
+          break;
+        case 'delete':
+          content = `
+    <div class="content-box">
+      <h2>Delete Product Quantity</h2>
+      <input id="productName" placeholder="Product Name">
+      <input id="deleteQuantity" placeholder="Quantity to Delete (or type 'all')">
+      <button onclick="deleteProduct()">Delete Product</button>
+    </div>`;
+          break;
+        case 'update':
+          content = `
+      <div class="content-box">
+        <h2>Update Product</h2>
+        <input id="productName" placeholder="Product Name">
+        <input id="productPrice" placeholder="New Price">
+        <input id="productStock" placeholder="New Stock">
+        <button onclick="updateProduct()">Update Product</button>
+      </div>`;
+          break;
+        case 'outOfStock':
+          content = `
+      <div class="content-box">
+        <h2>Out of Stock Products</h2>
+        <ul id="outOfStockList" style="list-style: none; padding: 0;"></ul>
+      </div>`;
+          break;
+        case 'totalProducts':
+          content = `
+      <div class="content-box">
+        <h2>Total Products</h2>
+        <p id="totalProductCount"></p>
+      </div>`;
+          break;
+        case 'viewAll':
+          content = `
+      <div class="content-box">
+        <h2>All Products</h2>
+        <ul id="productList" style="list-style: none; padding: 0;"></ul>
+      </div>`;
+          break;
+        default:
+          content = `
+      <div class="content-box">
+        <h2>Manage Products</h2>
+        <p>Take control of your content — start by choosing an option from the menu.</p>
+      </div>`;
+      }
+
+      main.innerHTML = content;
+
+      if (section === 'viewAll') {
+        fetch("http://localhost:3000/products")
+          .then(res => res.json())
+          .then(data => {
+            const list = document.getElementById("productList");
+            list.innerHTML = data.map(p => `
+        <li><strong>${p.name}</strong> - ${p.price} Rs - Stock: ${p.stock}</li>
+      `).join('');
+          });
+      }
+      if (section === 'totalProducts') {
+        fetch("http://localhost:3000/products/count")
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById("totalProductCount").innerText = `Total products: ${data.total}`;
+          });
+      }
+
+      if (section === 'outOfStock') {
+        fetch("http://localhost:3000/products/outofstock")
+          .then(res => res.json())
+          .then(data => {
+            const list = document.getElementById("outOfStockList");
+            list.innerHTML = data.length === 0
+              ? `<li>No out-of-stock products.</li>`
+              : data.map(p => `
+              <li><strong>${p.Name}</strong> - ${p.Price} Rs - Stock: ${p.Stock}</li>
+            `).join('');
+          });
+      }
+    }
+
+   function addProduct() {
+  const main = document.getElementById("main-content");
+  const nameInput = main.querySelector("#productName");
+  const priceInput = main.querySelector("#productPrice");
+  const stockInput = main.querySelector("#productStock");
+
+  const name = nameInput.value.trim();
+  const price = priceInput.value.trim();
+  const stock = stockInput.value.trim();
+
+  if (!name || !price || !stock) return alert("All fields are required!");
+
+  fetch("http://localhost:3000/products/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, price, stock }),
+  })
+    .then(res => res.text())
+    .then(msg => {
+      alert(msg);
+      // Clear input fields
+      nameInput.value = '';
+      priceInput.value = '';
+      stockInput.value = '';
+    });
+}
+
+  function deleteProduct() {
+  const main = document.getElementById("main-content");
+  const nameInput = main.querySelector("#productName");
+  const quantityInput = main.querySelector("#deleteQuantity");
+
+  const name = nameInput.value.trim();
+  const quantity = quantityInput.value.trim();
+
+  if (!name) return alert("Please enter product name.");
+
+  fetch("http://localhost:3000/products/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, quantity }),
+  })
+    .then(res => res.text())
+    .then(msg => {
+      alert(msg);
+      nameInput.value = '';
+      quantityInput.value = '';
+    });
+}
+
+  function updateProduct() {
+  const main = document.getElementById("main-content");
+  const nameInput = main.querySelector("#productName");
+  const priceInput = main.querySelector("#productPrice");
+  const stockInput = main.querySelector("#productStock");
+
+  const name = nameInput.value.trim();
+  const price = priceInput.value.trim();
+  const stock = stockInput.value.trim();
+
+  if (!name || !price || !stock) return alert("All fields are required!");
+
+  fetch("http://localhost:3000/products/update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, price, stock }),
+  })
+    .then(res => res.text())
+    .then(msg => {
+      alert(msg);
+      nameInput.value = '';
+      priceInput.value = '';
+      stockInput.value = '';
+    });
+}
+
+    function loadProducts() {
+      fetch("http://localhost:3000/products")
+        .then((response) => response.json())
+        .then((data) => {
+          const productList = document.getElementById("productList");
+          productList.innerHTML = "";
+
+          data.forEach((product) => {
+            const item = document.createElement("div");
+            item.innerHTML = `
+              <strong>${product.name}</strong> —
+              $${product.price} —
+              Stock: ${product.stock}
+            `;
+            productList.appendChild(item);
+          });
+        })
+        .catch((error) => console.error("Error loading products:", error));
+    }
+
+    window.onload = loadProducts;
+
+    function renderProductList() {
+      const list = document.getElementById("productList");
+      if (!list) return;
+
+      list.innerHTML = products.map(p => `
+        <li style="margin-bottom: 10px;">
+          <strong>${p.name}</strong> - ${p.price} Rs - Stock: ${p.stock}
+        </li>
+      `).join('');
+    }
+
+    function renderOutOfStockList() {
+      const list = document.getElementById("outOfStockList");
+      if (!list) return;
+
+      const outOfStock = products.filter(p => parseInt(p.stock) === 0);
+      list.innerHTML = outOfStock.length === 0
+        ? `<li>No out-of-stock products.</li>`
+        : outOfStock.map(p => `
+            <li style="margin-bottom: 10px;">
+              <strong>${p.name}</strong> - ${p.price} Rs - Stock: ${p.stock}
+            </li>`).join('');
+    }
+
+  </script>
+
+</body>
+
+</html>

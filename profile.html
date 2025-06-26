@@ -1,0 +1,280 @@
+<!-- Your full updated and fixed HTML -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile | LifeHealth Supply</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: url('picture3.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 0;
+    }
+
+    .heading {
+      margin-top: 60px;
+      text-align: center;
+      z-index: 1;
+    }
+
+    .heading h2 {
+      font-size: 36px;
+      color: #003366;
+    }
+
+    .profile-container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      color: #003366;
+      width: 90%;
+      max-width: 450px;
+      margin-top: 30px;
+      z-index: 1;
+      animation: fadeIn 0.5s ease-in-out;
+      text-align: center;
+    }
+
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 3px solid #003366;
+    }
+
+    .upload-label {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #0055aa;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .profile-container p {
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 15px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    span {
+      font-size: 15px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      margin-top: 5px;
+      display: none;
+    }
+
+    button {
+      margin: 30px auto 0;
+      background: #003366;
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      z-index: 1;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #002244, #004499);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .heading h2 {
+        font-size: 28px;
+      }
+
+      .profile-container {
+        padding: 20px;
+      }
+
+      button {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="heading">
+    <h2>My Profile</h2>
+  </div>
+
+  <div class="profile-container">
+    <img src="https://via.placeholder.com/120" alt="Profile Picture" class="profile-pic" id="profilePic" />
+    <input type="file" id="picUpload" accept="image/*" style="display: none;" />
+    <label for="picUpload" class="upload-label">Change Profile Picture</label>
+
+    <p><label>Name:</label> <span id="nameText"></span>
+      <input type="text" id="nameInput" />
+    </p>
+    <p><label>Address:</label> <span id="addressText"></span>
+      <input type="text" id="addressInput" placeholder="Enter address..." />
+    </p>
+    <p><label>Contact Number:</label> <span id="contactText"></span>
+      <input type="text" id="contactInput" />
+    </p>
+    <p><label>Email:</label> <span id="emailText"></span>
+      <input type="email" id="emailInput" disabled />
+    </p>
+    <p><label>Password:</label> <span id="passwordText">********</span>
+  <input type="password" id="passwordInput" placeholder="Enter new password (leave blank to keep current)" />
+</p>
+
+
+    <button id="editBtn">Edit Profile</button>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const email = localStorage.getItem("loggedInEmail");
+
+      if (!email) {
+        alert("No logged-in user found!");
+        return;
+      }
+
+      fetch(`http://localhost:3000/api/user-profile/${email}`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("nameText").innerText = data.name;
+          document.getElementById("addressText").innerText = data.address || "Not Available";
+          document.getElementById("contactText").innerText = data.phone_number;
+          document.getElementById("emailText").innerText = data.email;
+
+          document.getElementById("nameInput").value = data.name;
+          document.getElementById("addressInput").value = data.address || "";
+          document.getElementById("contactInput").value = data.phone_number;
+          document.getElementById("emailInput").value = data.email;
+        })
+        .catch(error => console.error("Error fetching profile:", error));
+
+      const editBtn = document.getElementById("editBtn");
+      let isEditing = false;
+
+      editBtn.addEventListener("click", () => {
+        isEditing = !isEditing;
+
+        const fields = ["name", "address", "contact", "email" , "password"];
+        const data = {};
+
+        fields.forEach(field => {
+  const text = document.getElementById(`${field}Text`);
+  const input = document.getElementById(`${field}Input`);
+
+  if (isEditing) {
+    if (input) input.style.display = "block";
+    if (text) text.style.display = "none";
+  } else {
+    if (input) input.style.display = "none";
+    if (text) {
+      text.style.display = "inline";
+      if (field === "password") {
+        text.innerText = "********";
+      } else {
+        text.innerText = input.value;
+      }
+    }
+    data[field] = input?.value;
+  }
+});
+
+
+        const password = document.getElementById("passwordInput").value;
+
+        if (!isEditing) {
+          fetch(`http://localhost:3000/api/user-profile/update/${data.email}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              name: data.name,
+              address: data.address,
+              phone_number: data.contact,
+              password: password
+            })
+          })
+            .then(response => {
+              if (!response.ok) return response.text().then(text => { throw new Error(text); });
+              return response.json();
+            })
+            .then(data => alert("Profile updated successfully!"))
+            .catch(error => {
+              console.error("Update failed:", error.message);
+              alert("Update failed: " + error.message);
+            });
+        }
+
+        editBtn.innerText = isEditing ? "Save Profile" : "Edit Profile";
+      });
+
+      document.getElementById("picUpload").addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            document.getElementById("profilePic").src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

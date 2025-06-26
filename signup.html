@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signup | LifeHealth Supply</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-image: url('picture3.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loginform {
+      background-color: #e3f2fd;
+      padding: 10px 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 30px;
+      color: black;
+    }
+
+    .signup-heading {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+      color: black;
+    }
+
+    .as-text {
+      font-size: 16px;
+      margin-top: 5px;
+      color: #333;
+    }
+
+    .user {
+      width: 48%;
+      margin: 10px 1%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .user.active {
+      background-color: #00509e;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 15px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    input:focus {
+      border-color: #003366;
+      outline: none;
+    }
+
+    .signup {
+      padding: 12px;
+      background-color: #003366;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .signup:hover {
+      background-color: #00509e;
+    }
+
+    p {
+      text-align: center;
+      color: #333;
+      margin-top: 15px;
+    }
+
+    a {
+      color: #003366;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .user {
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loginform">
+    <form>
+      <div class="icon">
+        <i class="fa-solid fa-user"></i>
+      </div>
+
+      <div class="signup-heading">
+        <div>SIGN UP</div>
+        <div class="as-text">AS</div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+        <button class="user" type="button">User</button>
+        <button class="user" type="button">Admin</button>
+      </div>
+
+      <input type="text" placeholder="Enter your Name" required/>
+      <input type="email" id="email" placeholder="Enter your Email" required/>
+      <input type="text" id="num" placeholder="Enter your Number" required/>
+      <input type="password" id="pass" placeholder="Enter your Password" required/>
+      <input type="password" id="passagain" placeholder="Confirm Password" required/>
+      <button class="signup" type="submit">Sign Up</button>
+
+      <p>Already have an account? <a href="login2.html">Login</a></p>
+    </form>
+  </div>
+
+  <script>
+    document.querySelector("form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = document.querySelector("input[placeholder='Enter your Name']").value;
+      const email = document.getElementById("email").value;
+      const phone_number = document.getElementById("num").value;
+      const password = document.getElementById("pass").value;
+      const confirmPassword = document.getElementById("passagain").value;
+      const role = document.querySelector(".user.active")?.textContent || "User";
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      const data = { name, email, phone_number, password, role };
+
+      try {
+        const res = await fetch("http://localhost:3000/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const message = await res.text();
+        alert(message);
+
+        if (message.toLowerCase().includes("success")) {
+        if (role === "User") {
+          window.location.href = "user.html";
+        } else if (role === "Admin") {
+          window.location.href = "admin.html";
+        }
+      }
+
+
+      } catch (err) {
+        alert("❌ Failed to submit data");
+        console.error(err);
+      }
+    });
+
+    
+
+    document.querySelectorAll(".user").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".user").forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+      });
+    });
+
+
+
+  </script>
+</body>
+
+</html>

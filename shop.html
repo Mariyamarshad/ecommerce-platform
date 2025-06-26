@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop | LifeHealth Supply</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="shopstyle.css">
+</head>
+<style>
+    header {
+        background-color: #003366;
+        color: white;
+        top: 0;
+        position: fixed;
+        left: 0;
+        width: 100%;
+        padding: 7px 7%;
+
+    }
+
+    header a {
+        color: white;
+        text-decoration: none;
+    }
+
+    header i {
+        margin-left: 20px;
+    }
+
+    #help {
+        margin-left: 400px;
+        display: inline;
+    }
+
+    body {
+        background-image: url('picture3.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+
+    }
+
+    .heading {
+        display: flex;
+        align-items: center;
+        margin-top: 40px;
+        background-color: whitesmoke;
+        color: #003366;
+    }
+
+    #search {
+        height: 20%;
+        width: 20%;
+        padding: 7px;
+        margin-top: 10px;
+        margin-left: 40px;
+        border: 1px solid #003366;
+        border-radius: 15px;
+        margin-bottom: 10px;
+        transition: border-color 0.3s;
+    }
+
+    .heading a {
+        text-decoration: none;
+        color: #003366;
+        margin-left: 20px;
+
+    }
+
+    .product-section {
+        padding: 40px 7%;
+        background-color: rgba(255, 255, 255, 0.8);
+        margin-top: 20px;
+    }
+
+    .product-section h2 {
+        color: #003366;
+        margin-bottom: 20px;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    .product-card {
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .product-card:hover {
+        transform: scale(1.03);
+    }
+
+    .product-card img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        margin-bottom: 10px;
+    }
+
+    .product-card .price {
+        color: #008000;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .product-card button {
+        background-color: #003366;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .product-card button:hover {
+        background-color: #00509e;
+    }
+</style>
+
+<body>
+    <header>
+        <div>
+            <a href="#"><i class="fa-solid fa-location-dot"></i> C2 Johar Town,Lahore </a>
+            <a href="#"> <i class="fa-solid fa-clock"></i> Everyday from 09:00am to 08:00pm</a>
+            <p id="help"> Need help? Call us:+923350647252</p>
+        </div>
+    </header>
+
+    <div class="heading">
+        <h2> <i class="fa-solid fa-store"></i>LifeHealth Supply </h2>
+        <input type="search" placeholder="search for items" id="search">
+        <a href="home.html"> Home</a>
+        <a href="user.html"> User Dashboard</a>
+        <a href="cart.html"> View Cart <i class="fa-solid fa-cart-shopping"></i></a>
+    </div>
+
+    <section class="product-section">
+        <h2>Pharmacy Products</h2>
+        <div id="productGrid" class="product-grid"></div>
+    </section>
+
+    <script>
+        const productGrid = document.getElementById("productGrid");
+        let products = [];
+
+        async function fetchProducts() {
+            try {
+                const response = await fetch("http://localhost:3000/products");
+                products = await response.json();
+                renderProducts();
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+            }
+        }
+
+        //SEARCH FILTER
+
+        function renderProducts(filterText = "") {
+            productGrid.innerHTML = "";
+
+            const filteredProducts = products.filter(p =>
+                p.name.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            filteredProducts.forEach(product => {
+                const card = document.createElement("div");
+                card.className = "product-card";
+
+                const stockStatus = product.stock >= 1 ? "In-Stock" : "Out-of-stock";
+
+                card.innerHTML = `
+            <h3>${product.name}</h3>
+            <p>Price: ${product.price}rs</p>
+            <p>Status: ${stockStatus}</p>
+            <button onclick="addToCart('${product.name}')">Add to Cart</button>
+        `;
+
+                productGrid.appendChild(card);
+            });
+        }
+
+        fetchProducts();
+
+        const searchInput = document.getElementById("search");
+        searchInput.addEventListener("input", (event) => {
+            renderProducts(event.target.value);
+        });
+
+        async function addToCart(productName) {
+            const productToAdd = products.find(p => p.name === productName);
+            if (!productToAdd) {
+                alert("Product not found!");
+                return;
+            }
+
+            const userId = 1; // Replace with dynamic value if you have login session
+            const productId = productToAdd.id; // Must exist in DB
+            const quantity = 1; // Or prompt user for quantity
+
+            try {
+                const response = await fetch("http://localhost:3000/cart", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ userId, productId, quantity })
+                });
+
+                if (response.ok) {
+                    alert(`${productName} added to cart!`);
+                } else {
+                    alert("Failed to add to cart");
+                }
+            } catch (error) {
+                console.error("Error adding to cart:", error);
+                alert("Error adding to cart");
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

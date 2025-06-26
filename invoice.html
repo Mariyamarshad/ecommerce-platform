@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice | LifeHealth Supply</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background-image: url('picture3.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .invoice {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .row h1,
+    .row h3,
+    .row p {
+      margin: 0;
+      color: #003366;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 15px 0;
+    }
+
+    .fromto {
+      color: #003366;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .to {
+      text-align: right;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      color: #003366;
+    }
+
+    td {
+      color: #003366;
+    }
+
+    .button-container {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #003366;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00509e;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="invoice">
+    <div class="row">
+      <h1 id="invoiceNumber">Invoice</h1>
+      <p id="invoiceID">ID:</p>
+    </div>
+    <hr />
+    <div class="row">
+      <h3>LifeHealth Supply</h3>
+      <p id="currentDate">Date:</p>
+    </div>
+    <hr />
+    <div class="fromto">
+      <div class="from">
+        <p><strong>From:</strong></p>
+        <h4>LifeHealth Supply</h4>
+        <p>C2, Johar Town, Lahore</p>
+        <p>+92 335 0647252</p>
+        <p>inquiryfor@gmail.com</p>
+      </div>
+      <div class="to" id="customerInfo">
+        <p><strong>To:</strong></p>
+        <h4 id="customerName">Customer Name</h4>
+        <p id="customerAddress">Address: -</p>
+        <p id="customerPhone">Phone: -</p>
+        <p id="customerEmail">Email: -</p>
+      </div>
+    </div>
+    <hr />
+
+    <div id="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Cost</th>
+            <th>Quantity</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody id="itemRows">
+          <!-- Dynamic rows go here -->
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="text-align: right;">Subtotal:</td>
+            <td id="subtotal">0.00</td>
+          </tr>
+          <tr>
+            <td colspan="3" style="text-align: right;">Tax (5%):</td>
+            <td id="tax">0.00</td>
+          </tr>
+          <tr>
+            <td colspan="3" style="text-align: right;">Total:</td>
+            <td id="total">0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="button-container">
+    <button id="printBtn">Print Invoice</button>
+    <button id="resetInvoiceBtn">Reset Invoice Number</button>
+  </div>
+
+ <script>
+  const userId = localStorage.getItem("userId");
+
+  async function fetchCustomerInfo() {
+    try {
+      const res = await fetch(`http://localhost:3000/user/${userId}`);
+      const user = await res.json();
+
+      document.getElementById("customerName").textContent = user.Name;
+      document.getElementById("customerAddress").textContent = "Address: " + (user.Address || "-");
+      document.getElementById("customerPhone").textContent = "Phone: " + (user.Phone || "-");
+      document.getElementById("customerEmail").textContent = "Email: " + (user.Email || "-");
+    } catch (err) {
+      console.error("Failed to fetch customer info:", err);
+    }
+  }
+
+  async function loadCartAndGenerateInvoice() {
+    try {
+      const response = await fetch(`http://localhost:3000/cart/${userId}`);
+      const cartItems = await response.json();
+
+      const tableBody = document.getElementById("itemRows");
+      tableBody.innerHTML = ""; // clear previous items
+      let subtotal = 0;
+
+      cartItems.forEach((item) => {
+        const row = document.createElement("tr");
+        const cost = parseFloat(item.price);
+        const quantity = parseInt(item.quantity || 1);
+        const total = cost * quantity;
+        subtotal += total;
+
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td>${cost.toFixed(2)}</td>
+          <td>${quantity}</td>
+          <td>${total.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      const tax = subtotal * 0.05;
+      const grandTotal = subtotal + tax;
+
+      document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+      document.getElementById("tax").textContent = tax.toFixed(2);
+      document.getElementById("total").textContent = grandTotal.toFixed(2);
+    } catch (err) {
+      alert("Failed to load cart items.");
+      console.error(err);
+    }
+  }
+
+  function setInvoiceDetails() {
+    const invoiceId = "INV" + Math.floor(Math.random() * 100000);
+    const today = new Date().toLocaleDateString();
+
+    document.getElementById("invoiceID").textContent = "ID: " + invoiceId;
+    document.getElementById("currentDate").textContent = "Date: " + today;
+    localStorage.setItem("selectedInvoiceId", invoiceId);
+  }
+
+  document.getElementById("printBtn").addEventListener("click", async () => {
+    const invoiceId = document.getElementById("invoiceID").textContent.split(": ")[1];
+    const date = document.getElementById("currentDate").textContent.split(": ")[1];
+    const subtotal = parseFloat(document.getElementById("subtotal").textContent);
+    const tax = parseFloat(document.getElementById("tax").textContent);
+    const total = parseFloat(document.getElementById("total").textContent);
+
+    const items = [];
+    const rows = document.querySelectorAll("#itemRows tr");
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("td");
+      items.push({
+        name: cols[0].textContent,
+        price: parseFloat(cols[1].textContent),
+        quantity: parseInt(cols[2].textContent),
+        total: parseFloat(cols[3].textContent)
+      });
+    });
+
+    try {
+      const res = await fetch("http://localhost:3000/save-invoice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId,
+          invoiceId,
+          date,
+          items,
+          subtotal,
+          tax,
+          total
+        })
+      });
+
+      if (res.ok) {
+        alert("Invoice saved successfully.");
+        window.print();
+        // Optional: window.location.href = "view-orders.html";
+      } else {
+        alert("Failed to save invoice.");
+      }
+    } catch (error) {
+      console.error("Error saving invoice:", error);
+      alert("Error occurred while saving invoice.");
+    }
+  });
+
+  document.getElementById("resetInvoiceBtn").addEventListener("click", () => {
+    setInvoiceDetails(); // regenerate invoice
+    fetchCustomerInfo(); // re-fetch updated customer info if needed
+  });
+
+  // Initialize on page load
+  setInvoiceDetails();
+  loadCartAndGenerateInvoice();
+  fetchCustomerInfo(); // <=== THIS LINE FIXES YOUR ISSUE
+</script>
+
+</body>
+
+</html>

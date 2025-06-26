@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>My Orders | LifeHealth Supply</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-image: url('picture3.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .heading {
+      text-align: center;
+      padding: 40px 0 20px;
+      color: #003366;
+      font-size: 32px;
+      font-weight: 600;
+    }
+
+    .order-container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .order-card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .order-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+
+    .order-header h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #003366;
+    }
+
+    .order-header span {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .order-details {
+      font-size: 14px;
+      color: #444;
+      margin-top: 10px;
+    }
+
+    .order-details p {
+      margin: 5px 0;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 15px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    thead {
+      background-color: #003366;
+      color: white;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .btn-row {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .view-btn {
+      background-color: #003366;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .view-btn:hover {
+      background-color: #0055aa;
+    }
+
+    .no-orders {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      color: #777;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      margin-top: 30px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="heading">My Orders</div>
+  <div class="order-container" id="invoiceContainer">
+    <!-- Invoices will be loaded here -->
+  </div>
+
+  <script>
+    async function loadAllInvoices() {
+      const userId = localStorage.getItem("userId");
+      const container = document.getElementById("invoiceContainer");
+
+      if (!userId) {
+        container.innerHTML = `<div class="no-orders">User not logged in.</div>`;
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:3000/invoices/${userId}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server error: ${errorText}`);
+        }
+
+        const invoices = await response.json();
+        console.log("INVOICES RESPONSE:", invoices);
+
+        if (!Array.isArray(invoices) || invoices.length === 0) {
+          container.innerHTML = `<div class="no-orders">No orders found.</div>`;
+          return;
+        }
+
+        container.innerHTML = "";
+
+        invoices.forEach(invoice => {
+          let rowsHtml = "";
+          invoice.items.forEach(item => {
+            const total = (item.Price || 0) * (item.Quantity || 1);
+            rowsHtml += `
+              <tr>
+                <td>${item.Name}</td>
+                <td>Rs. ${(item.Price || 0).toFixed(2)}</td>
+                <td>${item.Quantity}</td>
+                <td>Rs. ${total.toFixed(2)}</td>
+              </tr>`;
+          });
+
+          const card = `
+            <div class="order-card" id="invoice-${invoice.InvoiceID}">
+              <div class="order-header">
+                <h3>Invoice #${invoice.InvoiceID}</h3>
+                <span>Date: ${new Date(invoice.Date).toLocaleDateString()}</span>
+              </div>
+              <div class="order-details">
+                <p><strong>Customer:</strong> ${invoice.CustomerName}</p>
+                <p><strong>Email:</strong> ${invoice.Email}</p>
+                <p><strong>Phone:</strong> ${invoice.Phone}</p>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Price</th>
+                      <th>Qty</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rowsHtml}
+                  </tbody>
+                </table>
+                <p><strong>Total (Incl. Tax):</strong> Rs. ${(invoice.Total || 0).toFixed(2)}</p>
+                <div class="btn-row">
+                  <button class="view-btn" onclick="deleteInvoice('${invoice.InvoiceID}')">Delete</button>
+                </div>
+              </div>
+            </div>`;
+          container.innerHTML += card;
+        });
+
+      } catch (err) {
+        console.error("Failed to load invoices:", err);
+        container.innerHTML = `<div class="no-orders">Error loading invoices.</div>`;
+      }
+    }
+
+    async function deleteInvoice(invoiceId) {
+      if (!confirm("Are you sure you want to delete this invoice?")) return;
+
+      try {
+        const response = await fetch(`http://localhost:3000/invoices/${invoiceId}`, {
+          method: "DELETE"
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert("Invoice deleted successfully.");
+          loadAllInvoices(); // reload list
+        } else {
+          alert("Failed to delete invoice.");
+        }
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("An error occurred while deleting the invoice.");
+      }
+    }
+
+    loadAllInvoices();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice | LifeHealth Supply</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background-image: url('picture3.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .invoice {
+      background-color: #ffffffcc;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    .input-row label {
+      font-weight: bold;
+      color: #003366;
+      margin-bottom: 5px;
+    }
+
+    .input-row input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      color: #003366;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .button-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00509e;
+    }
+
+    .delete-btn {
+      cursor: pointer;
+      color: red;
+      font-weight: bold;
+    }
+
+    /* Print styles */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #invoiceSection,
+      #invoiceSection * {
+        visibility: visible;
+      }
+
+      #printHeader {
+        display: block;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 14px;
+        color: #000;
+      }
+
+      .button-container {
+        display: none !important;
+      }
+    }
+
+    #printHeader {
+      display: none;
+    }
+
+    .company-info {
+      border-bottom: 2px solid #003366;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      color: #003366;
+    }
+
+    .company-info h4 {
+      margin: 5px 0;
+      font-weight: 700;
+      font-size: 1.3em;
+    }
+
+    .product-inputs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .product-inputs input {
+      border-radius: 5px;
+    }
+
+    .product-name {
+      flex: 2;
+    }
+
+    .product-qty,
+    .product-price,
+    .product-total {
+      width: 90px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Print Header Info -->
+  <div id="printHeader">
+    <strong>Alfalah Surgical Traders</strong><br>
+    Contact: 0332-8580490<br>
+    Address: Block 17, D.G.Khan<br>
+    <em>From invoice to insight – all in one place.</em>
+  </div>
+
+  <div class="invoice" id="invoiceSection">
+    <div class="company-info">
+      <h4>LifeHealth Supply</h4>
+      <p>C2, Johar Town, Lahore</p>
+      <p>+92 335 0647252</p>
+      <p>inquiryfor@gmail.com</p>
+    </div>
+
+    <div class="input-row">
+      <label for="customerName">Customer Name:</label>
+      <input type="text" id="customerName" placeholder="Enter Customer Name" onkeydown="focusNext(event, 'productName')" />
+    </div>
+
+    <div class="input-row">
+      <label>Invoice Number:</label>
+      <input type="text" id="invoiceNumber" readonly tabindex="-1" />
+    </div>
+
+    <div class="input-row">
+      <label>Product Details:</label>
+      <div class="product-inputs">
+        <input type="text" id="productName" class="product-name" placeholder="Product Name" onkeydown="focusNext(event,'productQuantity')" />
+        <input type="number" id="productQuantity" class="product-qty" placeholder="Qty" min="1" onkeydown="focusNext(event,'productPrice')" />
+        <input type="number" id="productPrice" class="product-price" placeholder="Price" min="0" onkeydown="focusNext(event,'addItemBtn')" />
+        <input type="text" id="productTotal" class="product-total" placeholder="Total" readonly />
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody id="invoiceItems"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="text-align: right; font-weight: bold;">Grand Total:</td>
+          <td id="grandTotal">0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="button-container">
+      <button id="addItemBtn" onclick="addItem()">Add Item</button>
+      <button onclick="saveInvoiceToDatabase()">Save Invoice</button>
+      <button onclick="printInvoice()">Print Invoice</button>
+      <button onclick="resetInvoiceNumber()">Reset Invoice Number</button>
+    </div>
+  </div>
+
+  <script>
+    let invoiceCounter = localStorage.getItem("adminInvoiceNumber") || 0;
+    invoiceCounter++;
+    localStorage.setItem("adminInvoiceNumber", invoiceCounter);
+    document.getElementById("invoiceNumber").value = `INV-${invoiceCounter}`;
+
+    const quantityInput = document.getElementById("productQuantity");
+    const priceInput = document.getElementById("productPrice");
+    const totalInput = document.getElementById("productTotal");
+
+    function updateTotal() {
+      const qty = parseFloat(quantityInput.value) || 0;
+      const price = parseFloat(priceInput.value) || 0;
+      totalInput.value = (qty * price).toFixed(2);
+    }
+
+    quantityInput.addEventListener("input", updateTotal);
+    priceInput.addEventListener("input", updateTotal);
+
+    function addItem() {
+      const product = document.getElementById("productName").value.trim();
+      const qty = parseFloat(quantityInput.value) || 0;
+      const price = parseFloat(priceInput.value) || 0;
+      const total = qty * price;
+
+      if (!product || qty <= 0 || price <= 0) {
+        alert("Please enter valid product details.");
+        return;
+      }
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${product}</td>
+        <td>${qty}</td>
+        <td>${price.toFixed(2)}</td>
+        <td>${total.toFixed(2)}</td>
+        <td class="delete-btn" onclick="deleteRow(this)">✖</td>
+      `;
+
+      document.getElementById("invoiceItems").appendChild(row);
+
+      const grandTotalCell = document.getElementById("grandTotal");
+      const currentTotal = parseFloat(grandTotalCell.textContent) || 0;
+      grandTotalCell.textContent = (currentTotal + total).toFixed(2);
+
+      document.getElementById("productName").value = '';
+      quantityInput.value = '';
+      priceInput.value = '';
+      totalInput.value = '';
+      document.getElementById("productName").focus();
+    }
+
+    function deleteRow(btn) {
+      const row = btn.parentNode;
+      const total = parseFloat(row.cells[3].textContent) || 0;
+      row.remove();
+
+      const grandTotalCell = document.getElementById("grandTotal");
+      const currentTotal = parseFloat(grandTotalCell.textContent) || 0;
+      grandTotalCell.textContent = (currentTotal - total).toFixed(2);
+    }
+
+    function printInvoice() {
+      window.print();
+    }
+
+    function resetInvoiceNumber() {
+      if (confirm("Reset the invoice number to 0?")) {
+        localStorage.setItem("adminInvoiceNumber", 0);
+        location.reload();
+      }
+    }
+
+    function focusNext(event, nextElementId) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const nextElement = document.getElementById(nextElementId);
+        if (nextElement) {
+          nextElement.focus();
+        }
+      }
+    }
+
+    async function saveInvoiceToDatabase() {
+      const invoiceID = document.getElementById("invoiceNumber").value;
+      const customerName = document.getElementById("customerName").value;
+      const totalAmount = parseFloat(document.getElementById("grandTotal").textContent);
+
+      const rows = document.querySelectorAll("#invoiceItems tr");
+      const items = Array.from(rows).map(row => ({
+        product: row.cells[0].textContent,
+        qty: parseInt(row.cells[1].textContent),
+        price: parseFloat(row.cells[2].textContent),
+        total: parseFloat(row.cells[3].textContent)
+      }));
+
+      const payload = {
+        invoiceID,
+        adminName: "Admin1",
+        customerName,
+        totalAmount,
+        items
+      };
+
+      const res = await fetch('http://localhost:3000/api/admin/save-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      alert(data.message || 'Invoice saved!');
+    }
+  </script>
+</body>
+
+</html>
