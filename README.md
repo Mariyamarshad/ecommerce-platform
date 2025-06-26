@@ -32,3 +32,27 @@ A full-featured ecommerce and billing system with separate **Admin** and **User*
 
 ## 📁 Folder Structure
 
+BillingSystem/
+│
+├── server.js # Node.js backend
+├── script.sql # SQL database schema
+├── package.json # npm dependencies
+├── .env # Environment variables (ignored in Git)
+├── .gitignore # Git ignored files
+│
+├── admin.html # Admin login/dashboard
+├── adminInvoice.html # Manual invoice form
+├── productManagement.html # Admin product control
+├── reports.html # Admin billing reports
+├── staffSalary.html # Staff management
+│
+├── user.html # User main interface
+├── shop.html # Shopping page
+├── cart.html # Cart and checkout
+├── invoice.html # Invoice display
+├── userProfile.html # User profile page
+├── viewOrders.html # Order history
+│
+├── login2.html # Login page
+├── signup.html # Signup page
+├── home.html # Landing page
